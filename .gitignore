@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+www/
+
+# Android build
+android/.gradle/
+android/build/
+android/app/build/
+android/app/release/
+*.apk
+*.aab
+
+# iOS build
+ios/Pods/
+ios/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Capacitor
+.capacitor/
+
+# Temporary files
+*.tmp
+*.temp
