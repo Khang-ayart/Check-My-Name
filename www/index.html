@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dịch Tên Việt - Trung - Hàn - Nhật</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        .results {
+            margin-top: 2rem;
+            display: none; /* Hidden by default */
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .result-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .note {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Dịch Tên Quốc Tế</h1>
+    
+    <div class="input-group">
+        <label for="vietName">Nhập tên tiếng Việt (Có dấu):</label>
+        <input type="text" id="vietName" placeholder="Ví dụ: Trương Văn Khang">
+    </div>
+
+    <button onclick="translateName()">Dịch Ngay</button>
+
+    <div class="results" id="resultsArea">
+        <div class="result-card">
+            <h3>🇨🇳 Tiếng Trung (Pinyin)</h3>
+            <div class="result-value" id="resChinese">-</div>
+        </div>
+        <div class="result-card">
+            <h3>🇰🇷 Tiếng Hàn (Romanized)</h3>
+            <div class="result-value" id="resKorean">-</div>
+        </div>
+        <div class="result-card">
+            <h3>🇯🇵 Tiếng Nhật (Romaji)</h3>
+            <div class="result-value" id="resJapanese">-</div>
+        </div>
+    </div>
+    
+    <p class="note">Lưu ý: Kết quả dựa trên âm Hán-Việt chuẩn. Một số tên hiếm có thể không chính xác 100%.</p>
+</div>
+
+<script>
+    // Từ điển Âm Hán-Việt cơ bản (Maping Tiếng Việt -> Pinyin Trung Quốc)
+    // Đây là phần quan trọng nhất để đảm bảo tính chính xác
+    const sinoVietnameseDict = {
+        // Họ phổ biến
+        "nguyễn": "Ruan", "tran": "Chen", "le": "Li", "pham": "Fan", 
+        "hoang": "Huang", "huynh": "Huang", "phan": "Pan", "vu": "Wu", 
+        "vo": "Wu", "dang": "Deng", "bui": "Pei", "do": "Du", "ho": "He",
+        "ngo": "Wu", "duong": "Yang", "ly": "Li", "trinh": "Zheng",
+        "lâm": "Lin", "đinh": "Ding", "mai": "Mai", "tô": "Su",
+        "trương": "Zhang", "vương": "Wang", "đỗ": "Du", "lưu": "Liu",
+        
+        // Tên đệm và tên phổ biến
+        "văn": "Wen", "thị": "Shi", "minh": "Ming", "anh": "Ying",
+        "tuấn": "Jun", "dung": "Yong", "hùng": "Xiong", "mạnh": "Meng",
+        "thành": "Cheng", "công": "Gong", "đức": "De", "hiếu": "Xiao",
+        "hải": "Hai", "hà": "He", "hoa": "Hua", "hồng": "Hong",
+        "khang": "Kang", "kiệt": "Jie", "long": "Long", "lộc": "Lu",
+        "nam": "Nan", "nhật": "Ri", "phong": "Feng", "phúc": "Fu",
+        "quang": "Guang", "quốc": "Guo", "sơn": "Shan", "tâm": "Xin",
+        "tân": "Xin", "thanh": "Qing", "thảo": "Cao", "thu": "Qiu",
+        "thư": "Shu", "thủy": "Shui", "tiến": "Jin", "trí": "Zhi",
+        "trung": "Zhong", "tường": "Xiang", "uyên": "Yuan", "xuân": "Chun",
+        "vinh": "Rong", "việt": "Yue", "yến": "Yan", "lan": "Lan",
+        "hương": "Xiang", "giang": "Jiang", "tuyết": "Xue", "ngọc": "Yu",
+        "bích": "Bi", "châu": "Zhou", "diễm": "Yan", "kim": "Jin",
+        "thiên": "Tian", "bảo": "Bao", "chính": "Zheng", "nghĩa": "Yi",
+        "nhân": "Ren", "tài": "Cai", "đạt": "Da", "khôi": "Kui",
+        "khoa": "Ke", "sang": "Shang", "thịnh": "Sheng", "phát": "Fa",
+        "lộc": "Lu", "thọ": "Shou", "khanh": "Qing", "chi": "Chi",
+        "dung": "Rong", "nhi": "Er", "trang": "Zhuang", "vy": "Wei",
+        "thái": "Tai", "cẩm": "Jin", "hạnh": "Xing", "vân": "Yun",
+        "khánh": "Qing", "gia": "Jia", "huy": "Hui", "quyền": "Quan",
+        "thịnh": "Sheng", "thông": "Tong", "minh": "Ming", "rạng": "Rang",
+        "vĩ": "Wei", "đại": "Da", "cường": "Qiang", "thắng": "Sheng",
+        "kiên": "Jian", "bình": "Ping", "an": "An", "tĩnh": "Jing",
+        "lệ": "Li", "thắm": "Shen", "xinh": "Xing", "đẹp": "Mei"
+    };
+
+    // Bảng chuyển đổi Pinyin (Trung) -> Hàn (Romanized)
+    // Logic đơn giản hóa cho các âm tiết phổ biến
+    function pinyinToKorean(pinyin) {
+        const map = {
+            "Zhang": "Jang", "Chen": "Jin", "Li": "I", "Wang": "Wang",
+            "Liu": "Yu", "Yang": "Yang", "Huang": "Hwang", "Zhao": "Jo",
+            "Wu": "O", "Zhou": "Ju", "Xu": "Seo", "Sun": "Son",
+            "Ma": "Ma", "Hu": "Ho", "Guo": "Gwak", "Lin": "Im",
+            "He": "Ha", "Gao": "Go", "Luo": "Ra", "Song": "Song",
+            "Zheng": "Jeong", "Han": "Han", "Tang": "Dang", "Feng": "Pung",
+            "Yu": "Yu", "Dong": "Dong", "Xiao": "So", "Cheng": "Jeong",
+            "Cao": "Jo", "Yuan": "Won", "Deng": "Deung", "Peng": "Bung",
+            "Lu": "Ro", "Jiang": "Gang", "Cai": "Chae", "Pan": "Ban",
+            "Tian": "Jeon", "Du": "Do", "Ye": "Yeo", "Wei": "Wi",
+            "Lv": "Ryeo", "Zhong": "Jong", "Jin": "Jin", "Tan": "Dam",
+            "Wen": "Mun", "Fan": "Beom", "Jia": "Ga", "Shi": "Si",
+            "Ming": "Myeong", "Ying": "Yeong", "Jun": "Jun", "Yong": "Yong",
+            "Xiong": "Ung", "Meng": "Maeng", "Gong": "Gong", "De": "Deok",
+            "Xiao": "Hyo", "Hai": "Hae", "Hua": "Hwa", "Hong": "Hong",
+            "Kang": "Gang", "Jie": "Cheol", "Long": "Ryong", "Nan": "Nam",
+            "Ri": "Il", "Feng": "Pung", "Fu": "Bok", "Guang": "Gwang",
+            "Guo": "Guk", "Shan": "San", "Xin": "Sim", "Qing": "Thanh",
+            "Cao": "Thảo", "Qiu": "Thu", "Shui": "Thủy", "Jin": "Tiến",
+            "Zhi": "Trí", "Zhong": "Trung", "Xiang": "Tường", "Yuan": "Uyên",
+            "Chun": "Xuân", "Rong": "Vinh", "Yue": "Việt", "Yan": "Yến",
+            "Lan": "Lan", "Xiang": "Hương", "Xue": "Tuyết", "Yu": "Ngọc",
+            "Bi": "Bích", "Zhou": "Châu", "Jin": "Kim", "Tian": "Thiên",
+            "Bao": "Bảo", "Yi": "Nghĩa", "Ren": "Nhân", "Cai": "Tài",
+            "Da": "Đạt", "Kui": "Khôi", "Ke": "Khoa", "Shang": "Sang",
+            "Sheng": "Thịnh", "Fa": "Phát", "Lu": "Lộc", "Shou": "Thọ",
+            "Qing": "Khánh", "Chi": "Chi", "Zhuang": "Trang", "Wei": "Vy",
+            "Tai": "Thái", "Xing": "Hạnh", "Yun": "Vân", "Jia": "Gia",
+            "Hui": "Huy", "Quan": "Quyền", "Tong": "Thông", "Rang": "Rạng",
+            "Qiang": "Cường", "Jian": "Kiên", "Ping": "Bình", "An": "An",
+            "Jing": "Tĩnh", "Shen": "Thắm", "Mei": "Mỹ"
+        };
+        
+        // Fallback logic nếu không có trong từ điển chi tiết
+        if (map[pinyin]) return map[pinyin];
+        
+        // Xử lý sơ bộ nếu thiếu
+        let k = pinyin;
+        k = k.replace(/Zh/g, "J");
+        k = k.replace(/Q/g, "G");
+        k = k.replace(/X/g, "S");
+        k = k.replace(/C/g, "J");
+        return k; 
+    }
+
+    // Bảng chuyển đổi Pinyin (Trung) -> Nhật (Romaji - Onyomi)
+    function pinyinToJapanese(pinyin) {
+        const map = {
+            "Zhang": "Cho", "Chen": "Chin", "Li": "Ri", "Wang": "Ou",
+            "Liu": "Ryu", "Yang": "You", "Huang": "Ko", "Zhao": "Cho",
+            "Wu": "Go", "Zhou": "Shu", "Xu": "Jo", "Sun": "Son",
+            "Ma": "Ba", "Hu": "Ko", "Guo": "Kaku", "Lin": "Rin",
+            "He": "Ka", "Gao": "Ko", "Luo": "Ra", "Song": "So",
+            "Zheng": "Tei", "Han": "Kan", "Tang": "To", "Feng": "Fu",
+            "Yu": "Yo", "Dong": "To", "Xiao": "Sho", "Cheng": "Sei",
+            "Cao": "So", "Yuan": "Gen", "Deng": "To", "Peng": "Ho",
+            "Lu": "Ro", "Jiang": "Ko", "Cai": "Sai", "Pan": "Han",
+            "Tian": "Ten", "Du": "To", "Ye": "Ya", "Wei": "I",
+            "Zhong": "Chu", "Jin": "Kin", "Tan": "Tan", "Wen": "Bun",
+            "Fan": "Han", "Jia": "Ka", "Shi": "Shi", "Ming": "Mei",
+            "Ying": "Ei", "Jun": "Shun", "Yong": "Yo", "Xiong": "Yu",
+            "Meng": "Mo", "Gong": "Ko", "De": "Toku", "Xiao": "Ko",
+            "Hai": "Kai", "Hua": "Ka", "Hong": "Ko", "Kang": "Ko",
+            "Jie": "Ketsu", "Long": "Ryu", "Nan": "Nan", "Ri": "Jitsu",
+            "Fu": "Fuku", "Guang": "Ko", "Guo": "Koku", "Shan": "San",
+            "Xin": "Shin", "Qing": "Sei", "Qiu": "Shu", "Shui": "Sui",
+            "Zhi": "Chi", "Xiang": "So", "Yuan": "En", "Chun": "Shun",
+            "Rong": "Ei", "Yue": "Etsu", "Yan": "En", "Lan": "Ran",
+            "Xiang": "Ko", "Xue": "Setsu", "Bi": "Heki", "Zhou": "Shu",
+            "Jin": "Kin", "Tian": "Ten", "Bao": "Ho", "Yi": "Gi",
+            "Ren": "Jin", "Cai": "Sai", "Da": "Tatsu", "Kui": "Kai",
+            "Ke": "Ka", "Shang": "Sho", "Sheng": "Sei", "Fa": "Hatsu",
+            "Lu": "Roku", "Shou": "Ju", "Qing": "Kei", "Chi": "Shi",
+            "Zhuang": "So", "Wei": "I", "Tai": "Tai", "Xing": "Ko",
+            "Yun": "Un", "Jia": "Ka", "Hui": "Ki", "Quan": "Ken",
+            "Tong": "Tsū", "Rang": "Jo", "Qiang": "Kyo", "Jian": "Ken",
+            "Ping": "Hei", "An": "An", "Jing": "Sei", "Shen": "Shin",
+            "Mei": "Bi"
+        };
+
+        if (map[pinyin]) return map[pinyin];
+
+        // Fallback logic
+        let j = pinyin;
+        j = j.replace(/Zh/g, "Ch");
+        j = j.replace(/Q/g, "Ky");
+        j = j.replace(/X/g, "Sh");
+        j = j.replace(/C/g, "S");
+        return j;
+    }
+
+    function translateName() {
+        const input = document.getElementById('vietName').value.trim();
+        if (!input) return;
+
+        // Tách tên thành các từ
+        const words = input.split(' ');
+        
+        let chinesePinyin = [];
+        let koreanRom = [];
+        let japaneseRom = [];
+
+        words.forEach(word => {
+            const lowerWord = word.toLowerCase();
+            
+            // 1. Việt -> Trung (Pinyin)
+            let pinyin = sinoVietnameseDict[lowerWord];
+            
+            // Nếu không tìm thấy, thử bỏ dấu và tra lại (basic fallback)
+            if (!pinyin) {
+                // Giữ nguyên nếu quá hiếm, hoặc capitalise chữ cái đầu
+                pinyin = word.charAt(0).toUpperCase() + word.slice(1);
+            }
+
+            // 2. Trung -> Hàn
+            let kor = pinyinToKorean(pinyin);
+
+            // 3. Trung -> Nhật
+            let jap = pinyinToJapanese(pinyin);
+
+            chinesePinyin.push(pinyin);
+            koreanRom.push(kor);
+            japaneseRom.push(jap);
+        });
+
+        // Hiển thị kết quả
+        document.getElementById('resChinese').innerText = chinesePinyin.join(' ');
+        document.getElementById('resKorean').innerText = koreanRom.join(' ');
+        document.getElementById('resJapanese').innerText = japaneseRom.join(' ');
+        
+        document.getElementById('resultsArea').style.display = 'block';
+    }
+</script>
+
+</body>
+  </html>
